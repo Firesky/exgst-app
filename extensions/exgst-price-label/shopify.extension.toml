@@ -1,0 +1,10 @@
+name = "ExGST Price Label"
+type = "theme_app_extension"
+
+[settings]
+  # No global settings; configured per-block in theme editor
+
+[extension_points]
+  # This extension exposes a block that can be added to product/price sections
+
+

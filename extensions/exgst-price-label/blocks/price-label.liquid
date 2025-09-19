@@ -1,0 +1,67 @@
+{% schema %}
+{
+  "name": "Price label (ExGST)",
+  "target": "section",
+  "stylesheet": "price-label.css",
+  "javascript": "price-label.js",
+  "settings": [
+    {
+      "type": "text",
+      "id": "label_text",
+      "label": "Label text",
+      "default": "Ex. GST"
+    },
+    {
+      "type": "checkbox",
+      "id": "only_product_pages",
+      "label": "Only show on product pages",
+      "default": false
+    }
+  ]
+}
+{% endschema %}
+
+{% stylesheet %}
+.price-label-hidden { display:none; }
+{% endstylesheet %}
+
+{% javascript %}
+(function() {
+  var labelText = {{ block.settings.label_text | json }};
+  var onlyProduct = {{ block.settings.only_product_pages | json }};
+  try {
+    if (onlyProduct && !window.location.pathname.match(/\/products\//)) return;
+
+    var selectors = [
+      '[itemprop="price"]',
+      '.price-item.price-item--regular',
+      '.price__regular .price-item--regular',
+      '.product__price .price-item--regular',
+      '.price .price-item',
+      '.product-price [data-price]'
+    ];
+
+    function applyLabels() {
+      var prices = [];
+      selectors.forEach(function(sel){ document.querySelectorAll(sel).forEach(function(el){ prices.push(el); }); });
+      prices.forEach(function(el) {
+        if (el.dataset.exgstApplied === 'true') return;
+        el.insertAdjacentHTML('afterend', ' <span class="exgst-label" aria-hidden="true"></span>');
+        var sibling = el.nextElementSibling;
+        if (sibling) sibling.textContent = ' ' + labelText;
+        el.dataset.exgstApplied = 'true';
+      });
+    }
+
+    applyLabels();
+
+    var observer = new MutationObserver(function() {
+      applyLabels();
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+  } catch(e) {
+  }
+})();
+{% endjavascript %}
+
+
